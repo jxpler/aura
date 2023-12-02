@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Main from './Main';
 import Login from './Login';
+import Cursor from './Cursor';
 import './App.css';
 
 const App: React.FC = () => {
@@ -17,9 +18,9 @@ const App: React.FC = () => {
   const [token, setToken] = useState('')
 
   const handleSpotifyLogin = () => {
-    const client_id = ""; // TODO: CHANGE TO ENV VARIABLE
+    const client_id = "dcadc5f7dc4945cb9d40a122036aa190"; // TODO: CHANGE TO ENV VARIABLE
     const redirect_uri = "http://localhost:5173/";
-    const scopes = 'user-read-private user-read-email playlist-modify-public playlist-modify-private user-top-read user-read-recently-played';
+    const scopes = 'user-read-private user-read-email playlist-modify-public playlist-modify-private user-top-read user-read-recently-played user-read-playback-state';
 
     window.location.href = `https://accounts.spotify.com/authorize?client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}&scope=${encodeURIComponent(scopes)}&response_type=token&show_dialog=true`;
   };
@@ -59,6 +60,7 @@ const App: React.FC = () => {
   return (
     <>
     {isLoggedIn ? <Main token={token} setIsLoggedIn={setIsLoggedIn} /> : <Login onLogin={handleSpotifyLogin} />}
+    <Cursor />
     </>
     );
 }

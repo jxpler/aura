@@ -35,7 +35,7 @@ body {
     background-color: #1DB954;
     color: white;
     border-radius: 14px;
-    box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.54);
+    box-shadow: 3px 3px 3px 0 rgba(0, 0, 0, 0.54);
     transition: background-color 0.3s ease, transform 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -61,33 +61,44 @@ body {
 }
 
 .cover-art {
-    width: 60%;
+    width: 100%;
     margin: 0 auto;
-    border: 1px solid #000;
     border-radius: 25px;
     overflow: hidden;
-    box-shadow: 0px 10px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 15px rgba(255 255 255 / 19%);
 }
 
 .cover-art img {
-    width: 100%;
+    width: 500px;
+    height: 500px;
     object-fit: cover;
 }
 
 .song-details {
-    padding: 16px;
-    background-color: rgba(255,255,255,0.6)
+    text-align: center;
+    width: 500px;
+    height: 100px;
+    background-color: rgba(29, 185, 84,0.7);
+    border: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
 }
 
 .song-details h2 {
     font-size: 20px;
     margin-bottom: 8px;
     font-weight: bold;
+    text-align: left;
+    transform: translatex(10%);
 }
 
 .song-details h3 {
-    font-size: 16px;
-    color: gray;
+    font-size: 18px;
+    color: white;
+    text-align: left;
+    transform: translatex(10%);
 }
 
 .empty-song-card {
@@ -95,10 +106,11 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    margin: 15px auto;
-    width: 60%;
-    height: 100%;
-    color: gray;
+    width: 500px;
+    height: 600px;
+    color: white;
+    font-size: 20px;
+
 }
 .empty-song-card > *:first-child {
     margin-bottom: 16px;
@@ -124,6 +136,7 @@ body {
     padding: 20px;
     justify-content: center;
     color: white;
+    cursor: pointer;
 }
 
 .restart-btn {
@@ -131,11 +144,12 @@ body {
     background: none;
 }
 
-.animate-heart {
-    animation: heart-animation 1200ms ease-out 0s 1 normal forwards;
+.animate-icon {
+    animation: icon-animation 1200ms ease-out 0s 1 normal forwards;
 }
 
-@keyframes heart-animation {
+
+@keyframes icon-animation {
     0% {
 
         transform: scale(0.5);
@@ -154,13 +168,24 @@ body {
     }
     75% {
         transform: scale(1.60);
-        color: red;
     }
-  100% {
+    100% {
         transform: scale(1);
     }
 }
 
+
+
 @media (max-width: 600px) {
     
+}
+
+.cursorTrail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: -1;
 }
