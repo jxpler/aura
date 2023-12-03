@@ -18,7 +18,7 @@ const App: React.FC = () => {
   const [token, setToken] = useState('')
 
   const handleSpotifyLogin = () => {
-    const client_id = "dcadc5f7dc4945cb9d40a122036aa190"; // TODO: CHANGE TO ENV VARIABLE
+    const client_id = ""; // TODO: CHANGE TO ENV VARIABLE
     const redirect_uri = "http://localhost:5173/";
     const scopes = 'user-read-private user-read-email playlist-modify-public playlist-modify-private user-top-read user-read-recently-played user-read-playback-state';
 
