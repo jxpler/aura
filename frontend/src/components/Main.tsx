@@ -22,6 +22,8 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [audio, setAudio] = useState(null);
     const [volume, setVolume] = useState(0.5);
+    const [previewError, setPreviewError] = useState(false);
+    
     const fetchSongs = async () => {
         const params ={
             limit: 30,
@@ -115,7 +117,7 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
 
     const handlePlayPause = () => {
         if (!currentSong.songPreview) {
-            alert('Preview not available for this track :(');
+            setPreviewError(true);
             return;
         }
 
@@ -124,6 +126,7 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
         setIsPlaying(false);
     } else {
         setIsPlaying(true);
+        setPreviewError(false);
         audio.volume = volume;
         audio.play();
     }
@@ -135,13 +138,17 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
         if (isPlaying) {
             audio.play();
         }
+
+        if (currentSong.songPreview) {
+            setPreviewError(false);
+        }
     }, [audio, currentSong, isPlaying]);
 
     useEffect(() => {
         if (!audio) return;
         audio.volume = volume;
         }, [audio, volume]);
-    
+
     const handleLogout = () => {
         setIsLoggedIn(false);
         localStorage.removeItem('token');
@@ -152,6 +159,7 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
 
     return (
         <div className="app-container">
+            {previewError && <div className="error-msg">No preview</div>}
             <button onClick={handleLogout}>Logout</button>
             <input
                 type="range"

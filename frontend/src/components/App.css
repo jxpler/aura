@@ -189,3 +189,8 @@ body {
     pointer-events: none;
     z-index: -1;
 }
+
+.error-msg {
+    color: red;
+    font-weight: bold;
+}
