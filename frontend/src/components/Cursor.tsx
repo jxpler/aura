@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 
 const Cursor = () => {
   
@@ -21,8 +21,6 @@ const Cursor = () => {
         y: window.innerHeight * 0.5
     };
 
-    let mouseMoved = false;
-
     const trail = new Array(params.pointsNumber);
     for (let i = 0; i < params.pointsNumber; i++) {
         trail[i] = {
@@ -34,13 +32,12 @@ const Cursor = () => {
     }
 
     const mouseMoveHandler = e => {
-        mouseMoved = true;
         updateMousePosition(e.pageX, e.pageY);
     };
 
     window.addEventListener('mousemove', mouseMoveHandler);
 
-    function updateMousePosition(eX, eY) {
+    function updateMousePosition(eX: number, eY: number) {
         pointer.x = eX;
         pointer.y = eY;
     }

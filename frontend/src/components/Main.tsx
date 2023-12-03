@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHeart as fasHeart, faArrowRotateRight as farCircle, faTimes, faPause, faPlay } from '@fortawesome/free-solid-svg-icons';
+import { faHeart as fasHeart, faArrowRotateRight as farCircle, faPause, faPlay, faSkull } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 
 interface MainProps {
@@ -23,18 +23,49 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
     const [audio, setAudio] = useState(null);
     const [volume, setVolume] = useState(0.5);
     const [previewError, setPreviewError] = useState(false);
+    const [genres, setGenres] = useState([]);
+    const [selectedGenres, setSelectedGenres] = useState([]);
+
+
+    const fetchGenres = async () => {
+        try {
+          const response = await axios.get('https://api.spotify.com/v1/recommendations/available-genre-seeds',
+            {
+              headers: {
+                Authorization: 'Bearer ' + token,
+              },
+            }
+          );
+
+        setGenres(response.data.genres);
+
+        } catch (error) {
+            if (error.response.status === 401) {
+                setIsLoggedIn(false);
+            }
+            if (error.response.status === 429) {
+                console.error(error);
+                return null;
+            }
+        }
+    };
+    
+    const handleGenreChange = () => {
+        const ulElement = document.querySelector("#userSelectedGenres");
+        const selectedOptions = Array.from(ulElement.children, (li) => li.textContent);
+        setSelectedGenres(selectedOptions);
+    };
     
     const fetchSongs = async () => {
-        const params ={
-            limit: 30,
-            seed_genres: 'pop',
-        };
         try {
             const response = await axios.get('https://api.spotify.com/v1/recommendations', {
                 headers: {
                     Authorization: 'Bearer ' + token
                 },
-                params: params
+                params: {
+                    limit: 50,
+                    seed_genres: selectedGenres.join(',')
+                }
             });
             return response.data.tracks.map(item => ({
                 songCover: item.album.images[0].url,
@@ -44,11 +75,20 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
             }));
         } catch (error) {
             if (error.response.status === 401) {
-              setIsLoggedIn(false);
+                setIsLoggedIn(false);
             }
-            return [];
+            if (error.response.status === 429) {
+                console.error(error);
+                return null;
+            }
+            return null;
         }
     };
+
+    useEffect(() => {
+        fetchGenres();
+      }, []);
+    
 
     const handleDislike = async () => {
         if (isPlaying) {
@@ -66,6 +106,7 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
             return nextQueue;
         });
         setIsDislikeAnimated(true);
+        setPreviewError(false);
         setTimeout(() => {
             setIsDislikeAnimated(false);
         }, 300);
@@ -87,18 +128,19 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
             return nextQueue;
         });
         setIsLikeAnimated(true);
+        setPreviewError(false);
         setTimeout(() => {
             setIsLikeAnimated(false);
         }, 300);
     };
 
     useEffect(() => {
-        if (songQueue.length === 0) {
+        if (songQueue.length === 0 && selectedGenres.length > 0) {
             fetchSongs().then(initialSongs => {
                 setSongQueue(initialSongs);
             });
         }
-    }, []);
+    }, [songQueue, selectedGenres]);
 
     useEffect(() => {
         localStorage.setItem('songQueue', JSON.stringify({songs: songQueue, timestamp: Date.now()}));
@@ -180,25 +222,52 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
                 </div>
             ) : (
                 <div className="cover-art">
+                    {selectedGenres.length > 0  ? (
                     <div className="empty-song-card">
                         <div>
-                            <p>Press restart to get more songs</p>
+                            <p>Press the button to get more songs</p>
                         </div>
                         <button className="restart-btn" onClick={() => fetchSongs().then(newSongs => setSongQueue(newSongs))}>
                             <FontAwesomeIcon icon={farCircle} color="white" size="2x"/>
                         </button>
                     </div>
-                </div>
+
+                ) : (
+                    <div className="cover-art">
+                        <div className="empty-song-card">
+                            <label htmlFor="genreSelect">Select up to 5 genres</label>
+                            <select multiple onChange={handleGenreChange}>
+                                {genres.map((genre) => (
+                                    <option key={genre} value={genre}>
+                                    {genre}
+                                    </option>
+                                ))}
+                                </select>
+                            </div>
+                            <div>
+                                <ul id="userSelectedGenres">
+                                {selectedGenres.map((genre) => (
+                                    <li key={genre}>{genre}</li>
+                                ))}
+                                </ul>
+                                <div>
+                                    <button onClick={fetchSongs}>Get Recommendations</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    </div>
                 )}
+            
             <div className="controls">
                 <button className="dislike-btn" onClick={handleDislike}>
-                    <FontAwesomeIcon icon={faTimes} className={isDislikeAnimated ? 'animate-icon' : ''} />
+                    <FontAwesomeIcon icon={faSkull} className={isDislikeAnimated ? 'animate-icon' : ''}/>
                 </button>
                 <button onClick={handlePlayPause}>
-                    <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} />
+                    <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} size="1x"/>
                 </button>
                 <button onClick={handleLike}>
-                    <FontAwesomeIcon icon={fasHeart} color='red' className={isLikeAnimated ? 'animate-icon' : ''} />
+                    <FontAwesomeIcon icon={fasHeart} className={isLikeAnimated ? 'animate-icon' : ''}/>
                 </button>
             </div>
         </div>
