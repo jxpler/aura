@@ -95,7 +95,8 @@ body {
 }
 
 .song-details h3 {
-    font-size: 18px;
+    font-size: 16px;
+    opacity: 0.8;
     color: white;
     text-align: left;
     transform: translatex(10%);
@@ -193,4 +194,11 @@ body {
 .error-msg {
     color: red;
     font-weight: bold;
+}
+
+.play-btn-disabled {
+    opacity: 0.1;
+    size: 200%;
+    pointer-events: none;
+    transition: ease-out .5s;
 }

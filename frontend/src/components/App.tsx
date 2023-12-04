@@ -18,12 +18,28 @@ const App: React.FC = () => {
   const [token, setToken] = useState('')
 
   const handleSpotifyLogin = () => {
-    const client_id = "dcadc5f7dc4945cb9d40a122036aa190"; // TODO: CHANGE TO ENV VARIABLE
+    const client_id = "8982d096739c4623b4b5c27b485ee2dc"; // TODO: CHANGE TO ENV VARIABLE
     const redirect_uri = "http://localhost:5173/";
-    const scopes = 'user-read-private user-read-email playlist-modify-public playlist-modify-private user-top-read user-read-recently-played user-read-playback-state';
+    const scopes = 'user-read-private user-read-email playlist-modify-public playlist-modify-private user-top-read user-read-playback-state';
 
     window.location.href = `https://accounts.spotify.com/authorize?client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}&scope=${encodeURIComponent(scopes)}&response_type=token&show_dialog=true`;
   };
+
+  // const createPlaylist = async () => {
+  //   try {
+  //   const token = localStorage.getItem('token') as string;
+
+  //   const userId = 'xyz' // TODO: implement this and other functionality go eep eep now
+
+  //   const headers = {
+  //     'Authorization': "Bearer " + token,
+  //     'Content-Type': 'application/json'
+  //   };
+  // } catch (error) {
+  //   console.error(error);
+  // }
+
+  // const createPlaylistResponse = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`)
 
   useEffect(() => {
     const isFirstVisit = localStorage.getItem('firstVisit');
@@ -35,13 +51,14 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (isNewUser) {
+      createPlaylist();
       alert('First timer');
     }
   }, [isNewUser]);
 
   useEffect(() => {
     const hash = new URL(window.location.href).hash;
-    const params = new URLSearchParams(hash.substr(1));
+    const params = new URLSearchParams(hash.substring(1));
 
     if (params.get('access_token')) {
       const token = params.get('access_token') as string;

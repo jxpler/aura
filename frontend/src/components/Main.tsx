@@ -8,87 +8,92 @@ interface MainProps {
     setIsLoggedIn: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
-    const EXPIRY = 60 * 60 * 1000;
-    const storedData = JSON.parse(localStorage.getItem('songQueue') || '[]');
+const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
+    const storedToken = localStorage.getItem('token');
 
-    const storedSongs = storedData.songs;
-    const timestamp = storedData.timestamp;
 
     const [isLikeAnimated, setIsLikeAnimated] = useState(false);
     const [isDislikeAnimated, setIsDislikeAnimated] = useState(false);
-    const [songQueue, setSongQueue] = useState((Date.now() - timestamp < EXPIRY) ? storedSongs : []);
-    const [currentSong, setCurrentSong] = useState(null);
+
+    
+    const [songQueue, setSongQueue] = useState();
+    const [currentSong, setCurrentSong] = useState();
     const [isPlaying, setIsPlaying] = useState(false);
-    const [audio, setAudio] = useState(null);
+    const [audio, setAudio] = useState();
     const [volume, setVolume] = useState(0.5);
     const [previewError, setPreviewError] = useState(false);
-    const [genres, setGenres] = useState([]);
-    const [selectedGenres, setSelectedGenres] = useState([]);
+    const [firstFetch, setFirstFetch] = useState(0);
 
 
-    const fetchGenres = async () => {
-        try {
-          const response = await axios.get('https://api.spotify.com/v1/recommendations/available-genre-seeds',
-            {
-              headers: {
-                Authorization: 'Bearer ' + token,
-              },
-            }
-          );
 
-        setGenres(response.data.genres);
-
-        } catch (error) {
-            if (error.response.status === 401) {
-                setIsLoggedIn(false);
-            }
-            if (error.response.status === 429) {
-                console.error(error);
-                return null;
-            }
+  const fetchData = async () => {
+    try {
+      const dataResponse = await axios.get(
+        "https://api.spotify.com/v1/me/top/artists?time_range=short_term&limit=5&offset=0", 
+        {
+          headers: {
+            Authorization: "Bearer " + storedToken,
+          },
         }
-    };
-    
-    const handleGenreChange = () => {
-        const ulElement = document.querySelector("#userSelectedGenres");
-        const selectedOptions = Array.from(ulElement.children, (li) => li.textContent);
-        setSelectedGenres(selectedOptions);
-    };
-    
-    const fetchSongs = async () => {
-        try {
-            const response = await axios.get('https://api.spotify.com/v1/recommendations', {
-                headers: {
-                    Authorization: 'Bearer ' + token
-                },
-                params: {
-                    limit: 50,
-                    seed_genres: selectedGenres.join(',')
-                }
-            });
-            return response.data.tracks.map(item => ({
-                songCover: item.album.images[0].url,
-                songName: item.name,
-                artistName: item.artists[0].name,
-                songPreview: item.preview_url
-            }));
-        } catch (error) {
-            if (error.response.status === 401) {
-                setIsLoggedIn(false);
-            }
-            if (error.response.status === 429) {
-                console.error(error);
-                return null;
-            }
-            return null;
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const artistIds = dataResponse.data.items.map((artist) => artist.id);
+
+      const songsResponse = await axios.get(
+        "https://api.spotify.com/v1/recommendations?",
+        {
+          headers: {
+            Authorization: "Bearer " + storedToken,  
+          },
+          params: {
+            limit: 3,
+            seed_artists: artistIds.join(","),
+          },
         }
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      const newSongs = songsResponse.data.tracks.map((item) => ({
+        songCover: item.album.images[0].url,
+        songName: item.name,  
+        artistName: item.artists[0].name,
+        songPreview: item.preview_url,
+      }));
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+        setSongQueue(newSongs);
+
+        setCurrentSong(newSongs[0]);
+
+    return songQueue;
+    } catch (error: unknown) {
+      console.error("Error fetching data:", error);
+      if (error.response.status == 429) {
+        alert("Too many requests. '\n' Please try again later.");  
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (firstFetch == 0) {
+        fetchData();
+        setFirstFetch(1);
+    }
+  }, [firstFetch]);
+
+    const getNewSongs = () => {
+
+        if (isPlaying) {
+            audio.pause();
+            setIsPlaying(false);
+        }
+        fetchData();
     };
 
-    useEffect(() => {
-        fetchGenres();
-      }, []);
-    
 
     const handleDislike = async () => {
         if (isPlaying) {
@@ -98,11 +103,7 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
         setSongQueue(prevQueue => {
             let nextQueue = [...prevQueue];
             nextQueue.shift();
-            if (nextQueue.length === 5) {
-                fetchSongs().then(newSongs => {
-                    nextQueue = [...nextQueue, ...newSongs];
-                });
-            }
+            setCurrentSong(nextQueue[0]);
             return nextQueue;
         });
         setIsDislikeAnimated(true);
@@ -120,11 +121,7 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
         setSongQueue(prevQueue => {
             let nextQueue = [...prevQueue];
             nextQueue.shift();
-            if (nextQueue.length === 5) {
-                fetchSongs().then(newSongs => {
-                    nextQueue = [...nextQueue, ...newSongs];
-                });
-            }
+            setCurrentSong(nextQueue[0]);
             return nextQueue;
         });
         setIsLikeAnimated(true);
@@ -133,25 +130,6 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
             setIsLikeAnimated(false);
         }, 300);
     };
-
-    useEffect(() => {
-        if (songQueue.length === 0 && selectedGenres.length > 0) {
-            fetchSongs().then(initialSongs => {
-                setSongQueue(initialSongs);
-            });
-        }
-    }, [songQueue, selectedGenres]);
-
-    useEffect(() => {
-        localStorage.setItem('songQueue', JSON.stringify({songs: songQueue, timestamp: Date.now()}));
-        if (songQueue.length > 0) {
-            setCurrentSong(songQueue[0]);
-        } else {
-            fetchSongs().then(newSongs => {
-                setSongQueue(newSongs);
-            });
-        }
-    }, [songQueue]);
 
     useEffect(() => {
         setAudio(new Audio());
@@ -194,14 +172,16 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
     const handleLogout = () => {
         setIsLoggedIn(false);
         localStorage.removeItem('token');
-        localStorage.removeItem('songQueue');
         window.location.hash = '';
         window.location.reload();
     };
 
     return (
         <div className="app-container">
-            {previewError && <div className="error-msg">No preview</div>}
+            <button className="restart-btn" onClick={getNewSongs}>
+                <FontAwesomeIcon icon={farCircle} color="white" size="2x"/>
+            </button>
+            {previewError && <div className="error-msg">No preview</div>} 
             <button onClick={handleLogout}>Logout</button>
             <input
                 type="range"
@@ -222,48 +202,22 @@ const Main: React.FC<MainProps> = ({ token, setIsLoggedIn }) => {
                 </div>
             ) : (
                 <div className="cover-art">
-                    {selectedGenres.length > 0  ? (
                     <div className="empty-song-card">
                         <div>
-                            <p>Press the button to get more songs</p>
+                            <strong>Seems like you ran out of songs!</strong>
                         </div>
-                        <button className="restart-btn" onClick={() => fetchSongs().then(newSongs => setSongQueue(newSongs))}>
+                        <button className="restart-btn" onClick={getNewSongs}>
                             <FontAwesomeIcon icon={farCircle} color="white" size="2x"/>
                         </button>
                     </div>
-
-                ) : (
-                    <div className="cover-art">
-                        <div className="empty-song-card">
-                            <label htmlFor="genreSelect">Select up to 5 genres</label>
-                            <select multiple onChange={handleGenreChange}>
-                                {genres.map((genre) => (
-                                    <option key={genre} value={genre}>
-                                    {genre}
-                                    </option>
-                                ))}
-                                </select>
-                            </div>
-                            <div>
-                                <ul id="userSelectedGenres">
-                                {selectedGenres.map((genre) => (
-                                    <li key={genre}>{genre}</li>
-                                ))}
-                                </ul>
-                                <div>
-                                    <button onClick={fetchSongs}>Get Recommendations</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    </div>
+                </div>
                 )}
-            
+                        
             <div className="controls">
                 <button className="dislike-btn" onClick={handleDislike}>
                     <FontAwesomeIcon icon={faSkull} className={isDislikeAnimated ? 'animate-icon' : ''}/>
                 </button>
-                <button onClick={handlePlayPause}>
+                <button onClick={handlePlayPause} className={currentSong && currentSong.songPreview == null ? 'play-btn-disabled' : ''}>
                     <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} size="1x"/>
                 </button>
                 <button onClick={handleLike}>

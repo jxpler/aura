@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
 const Cursor = () => {
-  
+
   useEffect(() => {
     const canvas = document.getElementById('cursor-canvas');
     canvas.width = window.innerWidth;
@@ -35,8 +35,15 @@ const Cursor = () => {
         updateMousePosition(e.pageX, e.pageY);
     };
 
+    
     window.addEventListener('mousemove', mouseMoveHandler);
 
+    const handleResize = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    };
+    
+    window.addEventListener('resize', handleResize);
     function updateMousePosition(eX: number, eY: number) {
         pointer.x = eX;
         pointer.y = eY;
