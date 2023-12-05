@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as fasHeart, faArrowRotateRight as farCircle, faPause, faPlay, faSkull } from '@fortawesome/free-solid-svg-icons';
+import { cardDislikeAnimation as dislikeAnimation, newCardAnimation, cardLikeAnimation as likeAnimation, restartButtonAnimation, animateNewQueue } from './animations';
 import axios from 'axios';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
+
 
 interface MainProps {
     token: string;
@@ -15,7 +19,7 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
     const [isLikeAnimated, setIsLikeAnimated] = useState(false);
     const [isDislikeAnimated, setIsDislikeAnimated] = useState(false);
 
-    
+
     const [songQueue, setSongQueue] = useState();
     const [currentSong, setCurrentSong] = useState();
     const [isPlaying, setIsPlaying] = useState(false);
@@ -23,7 +27,6 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
     const [volume, setVolume] = useState(0.5);
     const [previewError, setPreviewError] = useState(false);
     const [firstFetch, setFirstFetch] = useState(0);
-
 
 
   const fetchData = async () => {
@@ -37,7 +40,7 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
         }
       );
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const artistIds = dataResponse.data.items.map((artist) => artist.id);
 
@@ -48,7 +51,7 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
             Authorization: "Bearer " + storedToken,  
           },
           params: {
-            limit: 3,
+            limit: 10,
             seed_artists: artistIds.join(","),
           },
         }
@@ -61,19 +64,28 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
         songName: item.name,  
         artistName: item.artists[0].name,
         songPreview: item.preview_url,
+        songId: item.id,
       }));
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         setSongQueue(newSongs);
-
         setCurrentSong(newSongs[0]);
 
+        const element = document.getElementById(`song-${currentSong.id}`);
+        if (element) {
+          animateNewQueue(element);
+          }
+        
+
     return songQueue;
-    } catch (error: unknown) {
+    } catch (error) {
       console.error("Error fetching data:", error);
+      if (error.response.status == 401) {
+        setIsLoggedIn(false);
+      }
       if (error.response.status == 429) {
-        alert("Too many requests. '\n' Please try again later.");  
+        alert("Whoops, it seems we hit the Rate Limit! \nPlease try again later.");  
       }
     }
   };
@@ -96,14 +108,37 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
 
 
     const handleDislike = async () => {
+        const currentSongId = document.getElementById(`song-${currentSong.songId}`);
+        
         if (isPlaying) {
             audio.pause();
             setIsPlaying(false);
         }
         setSongQueue(prevQueue => {
             let nextQueue = [...prevQueue];
+            if (currentSongId) {
+                if(nextQueue != null) {
+                dislikeAnimation(currentSongId, () => {
+                    currentSongId.style.opacity = '1' 
+                });
+                }
+            }
+            
+           
+
+            setTimeout(() => {
+            if (currentSongId) {
+            setCurrentSong(nextQueue[1]);
+            newCardAnimation(currentSongId, () => {
+                currentSongId.style.scale = '1';
+            });}
+            }, 600);
+
             nextQueue.shift();
-            setCurrentSong(nextQueue[0]);
+            setTimeout(() => {
+                setCurrentSong(nextQueue[0]);
+            }, 600);
+            
             return nextQueue;
         });
         setIsDislikeAnimated(true);
@@ -114,14 +149,37 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
     };
 
     const handleLike = async () => {
+        const currentSongId = document.getElementById(`song-${currentSong.songId}`);
+        
         if (isPlaying) {
             audio.pause();
             setIsPlaying(false);
         }
         setSongQueue(prevQueue => {
             let nextQueue = [...prevQueue];
-            nextQueue.shift();
-            setCurrentSong(nextQueue[0]);
+            if (currentSongId) {
+                if(nextQueue != null) {
+                likeAnimation(currentSongId, () => {
+                    currentSongId.style.opacity = '1'
+                    
+                });
+                }
+            }
+
+            setTimeout(() => {
+            
+            if (currentSongId) {
+            newCardAnimation(currentSongId, () => {
+                currentSongId.style.scale = '1';
+            });}
+            }, 600);
+            setCurrentSong(prev => ({ ...prev, songCover: null }));
+            nextQueue.shift(); 
+
+            setTimeout(() => {
+                setCurrentSong(nextQueue[0]);
+            }, 730);
+            
             return nextQueue;
         });
         setIsLikeAnimated(true);
@@ -176,12 +234,22 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
         window.location.reload();
     };
 
+    const callRestartAnimation = () => {
+        restartButtonAnimation('restart-btn');
+    };
+
+    const handleRestart = () => {
+        callRestartAnimation();
+        getNewSongs();
+    };
+
+
     return (
-        <div className="app-container">
+        <><div className="app-container">
             <button className="restart-btn" onClick={getNewSongs}>
-                <FontAwesomeIcon icon={farCircle} color="white" size="2x"/>
+                <FontAwesomeIcon icon={farCircle} color="white" size="2x" />
             </button>
-            {previewError && <div className="error-msg">No preview</div>} 
+            {previewError && <div className="error-msg">No preview</div>}
             <button onClick={handleLogout}>Logout</button>
             <input
                 type="range"
@@ -190,11 +258,13 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
                 step="0.01"
                 value={volume}
                 onChange={e => setVolume(e.target.value)}
-                className="volume-slider"
-            />
-            {currentSong && currentSong.songCover && currentSong.songName && currentSong.artistName ? (
-                <div className="cover-art">
-                    <img src={currentSong.songCover} alt="cover art"/>
+                className="volume-slider" />
+            {currentSong && currentSong.songCover ? (
+                <div id={`song-${currentSong.songId}`} className="cover-art">
+                    <LazyLoadImage
+                        src={currentSong.songCover}
+                        alt="song cover art"
+                        effect='blur' />
                     <div className="song-details">
                         <h2>{currentSong.songName}</h2>
                         <h3>{currentSong.artistName}</h3>
@@ -204,27 +274,39 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
                 <div className="cover-art">
                     <div className="empty-song-card">
                         <div>
-                            <strong>Seems like you ran out of songs!</strong>
+                            <strong>Oops you ran out of songs! </strong>
+                            <br></br>
+                            <br></br>
+                            <strong>Press the button below to get new songs.</strong>
                         </div>
-                        <button className="restart-btn" onClick={getNewSongs}>
-                            <FontAwesomeIcon icon={farCircle} color="white" size="2x"/>
+                        <button id="restart-btn" className="restart-btn" onClick={handleRestart}>
+                            <FontAwesomeIcon icon={farCircle} color="white" size="2x" />
                         </button>
                     </div>
                 </div>
-                )}
-                        
+            )}
+
             <div className="controls">
                 <button className="dislike-btn" onClick={handleDislike}>
-                    <FontAwesomeIcon icon={faSkull} className={isDislikeAnimated ? 'animate-icon' : ''}/>
+                    <FontAwesomeIcon icon={faSkull}
+                        className={`${isDislikeAnimated && currentSong != null ? 'animate-icon' : ''} 
+                                ${currentSong == null ? 'btn-disabled' : ''}`}
+                        style={{ cursor: currentSong == null ? 'none' : 'pointer' }} />
                 </button>
-                <button onClick={handlePlayPause} className={currentSong && currentSong.songPreview == null ? 'play-btn-disabled' : ''}>
-                    <FontAwesomeIcon icon={isPlaying ? faPause : faPlay} size="1x"/>
+                <button onClick={handlePlayPause} className={currentSong == null || currentSong.songPreview == null || songQueue == null ? 'btn-disabled' : ''}>
+                    <FontAwesomeIcon icon={isPlaying ? faPause : faPlay}
+                        style={{ cursor: currentSong == null ? 'none' : 'pointer' }}
+                        size="1x" />
                 </button>
                 <button onClick={handleLike}>
-                    <FontAwesomeIcon icon={fasHeart} className={isLikeAnimated ? 'animate-icon' : ''}/>
+                    <FontAwesomeIcon icon={fasHeart}
+                        className={`${isLikeAnimated && currentSong != null ? 'animate-icon' : ''} 
+                                ${currentSong == null ? 'btn-disabled' : ''}`}
+                        style={{ cursor: currentSong == null ? 'none' : 'pointer' }} />
                 </button>
             </div>
         </div>
+        </>
         );
 };
 
