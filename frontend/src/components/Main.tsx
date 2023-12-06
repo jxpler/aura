@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart as fasHeart, faArrowRotateRight as farCircle, faPause, faPlay, faSkull } from '@fortawesome/free-solid-svg-icons';
-import { cardDislikeAnimation as dislikeAnimation, newCardAnimation, cardLikeAnimation as likeAnimation, restartButtonAnimation, animateNewQueue } from './animations';
+import {    cardDislikeAnimation as dislikeAnimation, 
+            cardLikeAnimation as likeAnimation, 
+            restartButtonAnimation, animateNewQueue, 
+            newCardDislikeAnimation, emptyQueueDislikeAnimation,
+            newCardLikeAnimation, emptyQueueLikeAnimation} from './Animations';
 import axios from 'axios';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
@@ -40,7 +44,7 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
         }
       );
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       const artistIds = dataResponse.data.items.map((artist) => artist.id);
 
@@ -51,13 +55,13 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
             Authorization: "Bearer " + storedToken,  
           },
           params: {
-            limit: 10,
+            limit: 2,
             seed_artists: artistIds.join(","),
           },
         }
       );
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       const newSongs = songsResponse.data.tracks.map((item) => ({
         songCover: item.album.images[0].url,
@@ -67,7 +71,7 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
         songId: item.id,
       }));
 
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 50));
 
         setSongQueue(newSongs);
         setCurrentSong(newSongs[0]);
@@ -97,15 +101,21 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
     }
   }, [firstFetch]);
 
-    const getNewSongs = () => {
-
-        if (isPlaying) {
-            audio.pause();
+    const getNewSongs = () => {       
+        if (isPlaying && audio) {
+            (audio as HTMLAudioElement).pause();
             setIsPlaying(false);
         }
-        fetchData();
+        setTimeout(() => {
+            fetchData();
+        }, 1500);
     };
 
+    useEffect(() => {
+        if (songQueue && songQueue.length === 2) {
+            fetchData();
+        }
+    }, [songQueue]);
 
     const handleDislike = async () => {
         const currentSongId = document.getElementById(`song-${currentSong.songId}`);
@@ -118,27 +128,18 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
             let nextQueue = [...prevQueue];
             if (currentSongId) {
                 if(nextQueue != null) {
-                dislikeAnimation(currentSongId, () => {
-                    currentSongId.style.opacity = '1' 
-                });
+                    dislikeAnimation(currentSongId, () => {});
                 }
             }
-            
-           
-
-            setTimeout(() => {
-            if (currentSongId) {
-            setCurrentSong(nextQueue[1]);
-            newCardAnimation(currentSongId, () => {
-                currentSongId.style.scale = '1';
-            });}
-            }, 600);
-
             nextQueue.shift();
             setTimeout(() => {
+            if (currentSongId && songQueue.length > 1) {
+                newCardDislikeAnimation(currentSongId, () => {});
+            } else {
+                emptyQueueDislikeAnimation(currentSongId, () => {});}
                 setCurrentSong(nextQueue[0]);
             }, 600);
-            
+
             return nextQueue;
         });
         setIsDislikeAnimated(true);
@@ -159,26 +160,17 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
             let nextQueue = [...prevQueue];
             if (currentSongId) {
                 if(nextQueue != null) {
-                likeAnimation(currentSongId, () => {
-                    currentSongId.style.opacity = '1'
-                    
-                });
+                    likeAnimation(currentSongId, () => {});
                 }
             }
-
+            nextQueue.shift();
             setTimeout(() => {
-            
-            if (currentSongId) {
-            newCardAnimation(currentSongId, () => {
-                currentSongId.style.scale = '1';
-            });}
-            }, 600);
-            setCurrentSong(prev => ({ ...prev, songCover: null }));
-            nextQueue.shift(); 
-
-            setTimeout(() => {
+            if (currentSongId && songQueue.length > 1) {
+                newCardLikeAnimation(currentSongId, () => {});
+            } else {
+                emptyQueueLikeAnimation(currentSongId, () => {});}
                 setCurrentSong(nextQueue[0]);
-            }, 730);
+            }, 600);
             
             return nextQueue;
         });
@@ -259,7 +251,7 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
                 value={volume}
                 onChange={e => setVolume(e.target.value)}
                 className="volume-slider" />
-            {currentSong && currentSong.songCover ? (
+            {currentSong ? (
                 <div id={`song-${currentSong.songId}`} className="cover-art">
                     <LazyLoadImage
                         src={currentSong.songCover}

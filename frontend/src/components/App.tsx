@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Main from './Main';
 import Login from './Login';
 import Cursor from './Cursor';
-import './App.css';
-import '../assets/img/playlistCover.png';
+import './App.css'; 
+
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -11,12 +11,18 @@ const App: React.FC = () => {
     return storedIsLoggedIn === 'true' ? true : false;
   });
 
+  const [firstVisit, setFirstVisit] = useState(() => {
+    const isFirstVisit = localStorage.getItem('firstVisit');
+    return isFirstVisit === null || isFirstVisit === undefined || isFirstVisit !== 'false';
+  });
+
   useEffect(() => {
     localStorage.setItem('isLoggedIn', isLoggedIn.toString());
     }, [isLoggedIn]);
 
-  const [isNewUser, setIsNewUser] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(true);
   const [token, setToken] = useState('')
+
 
   const handleSpotifyLogin = () => {
     const client_id = ""; // TODO: CHANGE TO ENV VARIABLE
@@ -84,19 +90,9 @@ const App: React.FC = () => {
   };
 
 
-
-  useEffect(() => {
-    const isFirstVisit = localStorage.getItem('firstVisit');
-    if(!isFirstVisit) {
-      setIsNewUser(true);
-      localStorage.setItem('firstVisit', 'no');
-    }
-  }, []);
-
   useEffect(() => {
     if (isLoggedIn && isNewUser) {
-
-      alert('First timer');
+      // TODO: something
     }
   }, [isLoggedIn, isNewUser]);
 
@@ -122,7 +118,33 @@ const App: React.FC = () => {
 
   return (
     <>
-    {isLoggedIn ? <Main token={token} setIsLoggedIn={setIsLoggedIn} /> : <Login onLogin={handleSpotifyLogin} />}
+    {isLoggedIn ? (
+    <>
+    <Main token={token} setIsLoggedIn={setIsLoggedIn} />
+    </>
+    ) : (
+    <>
+    <Login onLogin={handleSpotifyLogin} />
+    {firstVisit ? (
+    <div className="firstvisit-bg">
+    <div className="firstvisit">
+      <h1>Hi there!</h1>
+      <p>I've noticed it's your first time visiting!</p>
+      <br/>
+      <p>What is Aura?</p>
+      <p>Aura is a matcher for you and your songs, it allows you to create a playlist based on your likes on Aura.</p>
+      <p>I hope you enjoy my little app!</p>
+      <button className="close-button" onClick={()=> setFirstVisit(false)}>
+        Close
+      </button>
+    </div>
+  </div>
+    ) : (
+    <></>
+    )}
+    </>
+    )}
+    
     <Cursor />
     </>
     );

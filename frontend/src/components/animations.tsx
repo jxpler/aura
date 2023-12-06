@@ -4,24 +4,59 @@ export const cardDislikeAnimation = (element: HTMLElement, onComplete?: () => vo
     anime({
         targets: element,
         opacity: [1, 0.1],
-        scale: [1, 1],
-        translateX: ['0%', '-90%'],
-        duration: 750,
-        easing: 'easeInOutQuad',
+        translateX: ['0%', '-70%'],
+        filter: ['blur(0px)', 'blur(25px)'],
+        duration: 600,
+        easing: 'easeInQuad',
         complete: onComplete,
     });
 };
 
-// TODO: do seperate animations for newcard on like and dislike(translatex)
-export const newCardAnimation = (element: HTMLElement, onComplete?: () => void) => {
+export const newCardDislikeAnimation = (element: HTMLElement, onComplete?: () => void) => {
     anime({
         targets: element,
-        translateX: ['0%', '0%'],
-        translateY: ['0%', '0%'],
-        scale: 1,
+        translateX: ['-70%', '0%'],
+        filter: ['blur(50px)', 'blur(0px)'],
         opacity: [0.1, 1],
         duration: 600,
-        easing: 'easeInOutQuad',
+        easing: 'easeInQuad',
+        complete: onComplete,
+    });
+};
+
+export const emptyQueueDislikeAnimation = (element: HTMLElement, onComplete?: () => void) => {
+    anime({
+        targets: element,
+        translateX: ['-70%', '0%'],
+        filter: ['blur(50px)', 'blur(0px)'],
+        opacity: [0.1, 1],
+        duration: 600,
+        easing: 'easeInQuad',
+        complete: onComplete,
+    });
+};
+
+export const newCardLikeAnimation = (element: HTMLElement, onComplete?: () => void) => {
+    anime({
+        targets: element,
+        translateX: ['+70%', '0%'],
+        translateY: ['0%', '0%'],
+        filter: ['blur(50px)', 'blur(0px)'],
+        opacity: [0.1, 1],
+        duration: 600,
+        easing: 'easeInQuad',
+        complete: onComplete,
+    });
+};
+
+export const emptyQueueLikeAnimation = (element: HTMLElement, onComplete?: () => void) => {
+    anime({
+        targets: element,
+        translateX: ['+70%', '0%'],
+        filter: ['blur(50px)', 'blur(0px)'],
+        opacity: [0.1, 1],
+        duration: 600,
+        easing: 'easeInQuad',
         complete: onComplete,
     });
 };
@@ -29,11 +64,11 @@ export const newCardAnimation = (element: HTMLElement, onComplete?: () => void) 
 export const cardLikeAnimation = (element: HTMLElement, onComplete?: () => void) => {
     anime({
         targets: element,
-        opacity: [1, 0],
-        scale: [1, 0.8],
-        translateX: ['0%', '+40%'],
-        duration: 750,
-        easing: 'easeInOutQuad',
+        opacity: [1, 0.1],
+        translateX: ['0%', '+70%'],
+        filter: ['blur(0px)', 'blur(25px)'],
+        duration: 600,
+        easing: 'easeInQuad',
         complete: onComplete,
     });
 };
