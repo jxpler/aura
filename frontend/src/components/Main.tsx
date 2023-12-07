@@ -169,9 +169,9 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
             audio.pause();
             setIsPlaying(false);
         }
-        // @ts-expect-error prevQueue is not undefined
+       // @ts-expect-error Argument of type '(prevQueue: undefined) => any[]' is not assignable to parameter of type 'SetStateAction<undefined>'. Type 'any[]' is not assignable to type 'undefined'.
         setSongQueue(prevQueue => {
-            // @ts-expect-error prevQueue is not undefined
+            // @ts-expect-error Type 'undefined' must have a '[Symbol.iterator]()' method that returns an iterator.
             const nextQueue = [...prevQueue];
             if (currentSongId) {
                 if(nextQueue != null) {
@@ -180,7 +180,7 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
             }
             nextQueue.shift();
             setTimeout(() => {
-            // @ts-expect-error songQueue is not null
+           // @ts-expect-error 'songQueue' is possibly 'undefined'.
             if (currentSongId && songQueue.length > 1) {
                 newCardDislikeAnimation(currentSongId, () => {});
             } else {
@@ -219,9 +219,9 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
             audio.pause();
             setIsPlaying(false);
         }
-        // @ts-expect-error prevQueue is not undefined
+       // @ts-expect-error Argument of type '(prevQueue: undefined) => any[]' is not assignable to parameter of type 'SetStateAction<undefined>'. Type 'any[]' is not assignable to type 'undefined'.
         setSongQueue(prevQueue => {
-            // @ts-expect-error prevQueue is not undefined
+          // @ts-expect-error Type 'undefined' must have a '[Symbol.iterator]()' method that returns an iterator.
             const nextQueue = [...prevQueue];
             if (currentSongId) {
                 if(nextQueue != null) {
@@ -233,11 +233,11 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
 
             nextQueue.shift();
             setTimeout(() => {
-                // @ts-expect-error songQueue is not undefined
+                // @ts-expect-error 'songQueue' is possibly 'undefined'.
             if (currentSongId && songQueue.length > 1) {
                 newCardLikeAnimation(currentSongId, () => {});
             } else {
-                // @ts-expect-error currentSongId 
+                // @ts-expect-error Argument of type 'HTMLElement | null' is not assignable to parameter of type 'HTMLElement'. Type 'null' is not assignable to type 'HTMLElement'.
                 emptyQueueLikeAnimation(currentSongId, () => {});}
                 setCurrentSong(nextQueue[0]);
             }, 600);
