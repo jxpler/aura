@@ -18,7 +18,7 @@ import {    cardDislikeAnimation as dislikeAnimation,
             cardLikeAnimation as likeAnimation, 
             restartButtonAnimation, animateNewQueue, 
             newCardDislikeAnimation, emptyQueueDislikeAnimation,
-            newCardLikeAnimation, emptyQueueLikeAnimation} from './Animations';
+            newCardLikeAnimation, emptyQueueLikeAnimation} from './Animations.tsx';
 import 'react-lazy-load-image-component/src/effects/blur.css';
 
 
@@ -180,12 +180,12 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
             }
             nextQueue.shift();
             setTimeout(() => {
-            // @ts-expect-error songQueue is not undefined
+            // @ts-expect-error songQueue is not null
             if (currentSongId && songQueue.length > 1) {
                 newCardDislikeAnimation(currentSongId, () => {});
             } else {
-                // @ts-expect-error currentSongId
-                emptyQueueDislikeAnimation(currentSongId, () => {});}
+            
+                emptyQueueDislikeAnimation(currentSongId as HTMLElement, () => {});}
                 setCurrentSong(nextQueue[0]);
             }, 600);
 
