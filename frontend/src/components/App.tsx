@@ -30,7 +30,7 @@ const App: React.FC = () => {
 
 
   const handleSpotifyLogin = () => {
-    const client_id = process.env.REACT_APP_CLIENT_ID; // TODO: CHANGE TO ENV VARIABLE
+    const client_id = process.env.VITE_REACT_APP_CLIENT_ID; // TODO: CHANGE TO ENV VARIABLE
     const redirect_uri = "http://localhost:5173/";
     const scopes = 'user-read-private user-read-email playlist-modify-private user-top-read user-read-playback-state';
 
