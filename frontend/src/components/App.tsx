@@ -30,8 +30,8 @@ const App: React.FC = () => {
 
 
   const handleSpotifyLogin = () => {
-    const client_id = process.env.VITE_REACT_APP_CLIENT_ID; // TODO: CHANGE TO ENV VARIABLE
-    const redirect_uri = "http://localhost:5173/";
+    const client_id = process.env.VITE_REACT_APP_CLIENT_ID;
+    const redirect_uri = 'https://aura-joply.vercel.app/';
     const scopes = 'user-read-private user-read-email playlist-modify-private user-top-read user-read-playback-state';
 
     window.location.href = `https://accounts.spotify.com/authorize?client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}&scope=${encodeURIComponent(scopes)}&response_type=token&show_dialog=true`;
