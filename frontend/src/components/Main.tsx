@@ -237,8 +237,9 @@ const Main: React.FC<MainProps> = ({ setIsLoggedIn }) => {
             if (currentSongId && songQueue.length > 1) {
                 newCardLikeAnimation(currentSongId, () => {});
             } else {
-                // @ts-expect-error Argument of type 'HTMLElement | null' is not assignable to parameter of type 'HTMLElement'. Type 'null' is not assignable to type 'HTMLElement'.
+                if(currentSongId) {
                 emptyQueueLikeAnimation(currentSongId, () => {});}
+                }
                 setCurrentSong(nextQueue[0]);
             }, 600);
             
