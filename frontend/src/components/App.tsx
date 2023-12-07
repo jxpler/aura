@@ -30,6 +30,7 @@ const App: React.FC = () => {
 
 
   const handleSpotifyLogin = () => {
+    // @ts-expect-error error TS2339 
     const client_id = import.meta.env.VITE_CLIENT_ID;
     const redirect_uri = 'https://aura-joply.vercel.app/';
     const scopes = 'user-read-private user-read-email playlist-modify-private user-top-read user-read-playback-state';
