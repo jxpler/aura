@@ -30,7 +30,7 @@ const App: React.FC = () => {
 
 
   const handleSpotifyLogin = () => {
-    const client_id = process.env.VITE_REACT_APP_CLIENT_ID;
+    const client_id = import.meta.env.VITE_CLIENT_ID;
     const redirect_uri = 'https://aura-joply.vercel.app/';
     const scopes = 'user-read-private user-read-email playlist-modify-private user-top-read user-read-playback-state';
 
