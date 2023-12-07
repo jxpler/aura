@@ -391,13 +391,12 @@ body {
     font-family: inherit;
     font-size: 20px;
     color: #fff;
-    transition: all 0.8s ease-in-out;
     text-decoration: none;
     border: none;
     background: none;
     opacity: 1;
     transition: opacity 0.5s ease-in-out;
-
+    transform: translateX(+5%);
 }
 
 @media (max-height: 800px) {
