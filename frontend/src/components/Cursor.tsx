@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 
+
 const Cursor = () => {
 
+    
   useEffect(() => {
-    const canvas = document.getElementById('cursor-canvas');
+    const canvas = document.getElementById('cursor-canvas') as HTMLCanvasElement;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     const ctx = canvas.getContext('2d');
@@ -31,7 +33,7 @@ const Cursor = () => {
         }
     }
 
-    const mouseMoveHandler = e => {
+    const mouseMoveHandler = (e: MouseEvent) => {
         updateMousePosition(e.pageX, e.pageY);
     };
 
@@ -50,6 +52,7 @@ const Cursor = () => {
     }
 
     function animate() {
+        if (ctx) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.strokeStyle = "rgb(29, 185, 84)";
         trail.forEach((p, pIdx) => {
@@ -78,6 +81,7 @@ const Cursor = () => {
         ctx.stroke();
 
         window.requestAnimationFrame(animate);
+    }
     }
 
       window.requestAnimationFrame(animate);

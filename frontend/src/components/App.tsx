@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import axios from 'axios';
 import Main from './Main';
 import Login from './Login';
 import Cursor from './Cursor';
 import './App.css'; 
-
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
@@ -20,14 +20,18 @@ const App: React.FC = () => {
     localStorage.setItem('isLoggedIn', isLoggedIn.toString());
     }, [isLoggedIn]);
 
-  const [isNewUser, setIsNewUser] = useState(true);
+  const [isNewUser, setIsNewUser] = useState(() => {
+    const isNewUser = localStorage.getItem('isNewUser');
+    return isNewUser === null || isNewUser === undefined || isNewUser !== 'false';
+  });
+
   const [token, setToken] = useState('')
 
 
   const handleSpotifyLogin = () => {
-    const client_id = ""; // TODO: CHANGE TO ENV VARIABLE
+    const client_id = process.env.REACT_APP_CLIENT_ID; // TODO: CHANGE TO ENV VARIABLE
     const redirect_uri = "http://localhost:5173/";
-    const scopes = 'user-read-private user-read-email playlist-modify-public playlist-modify-private user-top-read user-read-playback-state';
+    const scopes = 'user-read-private user-read-email playlist-modify-private user-top-read user-read-playback-state';
 
     window.location.href = `https://accounts.spotify.com/authorize?client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}&scope=${encodeURIComponent(scopes)}&response_type=token&show_dialog=true`;
   };
@@ -45,16 +49,18 @@ const App: React.FC = () => {
       return userId;
     } catch (error: unknown) {
       console.error("Error fetching data:", error);
+      //@ts-expect-error error is type of unknown
       if (error.response.status == 401) {
         setIsLoggedIn(false);
       }
+      //@ts-expect-error error is type of unknown
       if (error.response.status == 429) {
         alert("Whoops, it seems we hit the Rate Limit! \nPlease try again later.");  
       }
   }
 };
 
-  const createPlaylist = async () => {
+  const createPlaylist = useCallback(async () => {
     try {
     const token = localStorage.getItem('token') as string;
     const userId = await getUserId()
@@ -64,16 +70,14 @@ const App: React.FC = () => {
       'Content-Type': 'application/json'
     };
 
-    const playlistName = 'Super-duper special playlist';
-    const playlistDescription = 'This is a super special(private 😉) playlist made by YOU using Aura ❤';
-    const playlistImage = [{ url: 'playlistCover.png', width: 300, height: 300 }];
+    const playlistName = 'Super-duper special playlist(made by Aura)';
+    const playlistDescription = 'This is a super special(and private) playlist created by Aura!\n And curated by YOU!';
 
     const createPlaylistResponse = await fetch(`https://api.spotify.com/v1/users/${userId}/playlists`, {
       method: 'POST',
       headers: headers,
       body: JSON.stringify({
         name: playlistName,
-        images: playlistImage,
         description: playlistDescription,
         public: false,
       }),
@@ -81,20 +85,28 @@ const App: React.FC = () => {
 
     if(createPlaylistResponse.ok){
       const playlistData = await createPlaylistResponse.json();
-      return playlistData;
+      localStorage.setItem('playlistId', playlistData.id);
     }
 
     } catch (error: unknown) {
       alert(`Error creating playlist: ${error}`);
     }
-  };
+  }, []);
 
 
   useEffect(() => {
     if (isLoggedIn && isNewUser) {
-      // TODO: something
+      createPlaylist()
+      localStorage.setItem('isNewUser', 'false');
+      setIsNewUser(false);
     }
-  }, [isLoggedIn, isNewUser]);
+  }, [isLoggedIn, isNewUser, createPlaylist]);
+
+  const changeFirstVisit = () => {
+    localStorage.setItem('firstVisit', 'false');
+    setFirstVisit(false);
+  };
+
 
   useEffect(() => {
     const hash = new URL(window.location.href).hash;
@@ -120,21 +132,26 @@ const App: React.FC = () => {
     <>
     {isLoggedIn ? (
     <>
-    <Main token={token} setIsLoggedIn={setIsLoggedIn} />
+    <Main token={token} setIsLoggedIn={setIsLoggedIn}/>
+    
     </>
     ) : (
     <>
+    <div className="login-container">
     <Login onLogin={handleSpotifyLogin} />
+    </div>
     {firstVisit ? (
     <div className="firstvisit-bg">
     <div className="firstvisit">
+    
       <h1>Hi there!</h1>
       <p>I've noticed it's your first time visiting!</p>
       <br/>
-      <p>What is Aura?</p>
-      <p>Aura is a matcher for you and your songs, it allows you to create a playlist based on your likes on Aura.</p>
+      <p>Let me quickly introduce Aura.</p>
+      <p>Aura is a matcher for you and your song taste, it allows you to discover new songs that match your taste and turn that into an experience curated by you.</p>
+      <br/>
       <p>I hope you enjoy my little app!</p>
-      <button className="close-button" onClick={()=> setFirstVisit(false)}>
+      <button className="close-button" onClick={changeFirstVisit}>
         Close
       </button>
     </div>
@@ -147,6 +164,7 @@ const App: React.FC = () => {
     
     <Cursor />
     </>
+    
     );
 }
 

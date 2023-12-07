@@ -3,7 +3,6 @@
 
 body {
     font-family: 'Ubuntu Mono', monospace;
-    display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
@@ -11,7 +10,18 @@ body {
     background: #191414;
 }
 
-
+.login-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    transition: filter 0.3s ease-in;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 .app-container {
     position: absolute;
     top: 50%;
@@ -29,7 +39,7 @@ body {
     display: inline-block;
     margin: 20px;
     padding: 12px 32px;
-    font-size: 28px;
+    font-size: 38px;
     text-align: center;
     text-decoration: none;
     background-color: #1DB954;
@@ -179,8 +189,48 @@ body {
     }
 }
 
+.logout-btn {
+    border: none;
+    background: none;
+    font-size: 24px;
+    cursor: pointer;
+    transform: translateX(10%);
+}
 
+.slider-icon {
+    float: right;
+    font-size: 24px;
+    margin-right: 8px;
+    transform: translate(-25%,30%);
+}
+.slider {
+    float: right;
+    height: 24px;
+    background: none;
+    border-radius: 9px;
+    color: rgba(29, 185, 84, 0.7);
+    margin-right: 10px;
+    cursor: pointer;
+    transform: translate(-5%,42%);
+}
 
+.slider .level {
+    appearance: none;
+    width: auto;
+    height: 8px;
+    background: rgb(82, 82, 82, 0.77);
+    overflow: hidden;
+    border-radius: 90px;
+    transition: height 0.1s;
+    cursor: inherit;
+}
+
+.slider .level::-webkit-slider-thumb {
+    appearance: none;
+    width: 0;
+    height: 0;
+    box-shadow: -200px 0 0 200px rgba(29, 185, 84);
+}
 
 .cursorTrail {
     position: absolute;
@@ -204,8 +254,6 @@ body {
     transition: ease-out .5s;
 }
 
-/* first time visit stylings */
-
 .firstvisit-bg {
     position: fixed;
     top: 0;
@@ -215,6 +263,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: 0.5s ease-out;
 }
   
 .firstvisit {
@@ -227,6 +276,7 @@ body {
     width: 40%;
     height: 80%;
     box-shadow: 0 4px 35px rgb(255, 255, 255);
+    
 }
   
 .close-button {
@@ -258,6 +308,98 @@ body {
 }
 
 
+.top-row {
+    display: relative;
+    align-items: center;
+    transform: translateY(20%);
+}
+
+.links {
+    color: #fff;
+    justify-content: center;
+    text-align: center;  
+}
+
+.github-link {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    transform: translate(30%, -50%);
+    margin: auto;
+    color: #fff;
+    text-decoration: none;
+}
+.playlist-link {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    transform: translate(-5%, -50%);
+    margin: auto;
+    font-size: 24px;
+    color: #fff;
+    text-decoration: none;
+}
+.playlist-link a:hover {
+    color: #1a9347;
+}
+
+.term-select {
+    position: absolute;
+    left: 50;
+    bottom: 0;
+    transform: translate(-50%, -35%);
+    text-align: center;
+    font-family: inherit;
+    height: 38px;
+    padding-left: 4px;
+    width: 120px;
+    font-size: 24px;
+    border-radius: 10px;
+    color: #fff;
+    background: none;
+    border: 1px solid #fff;
+}
+
+.term-select:hover, .term-select:focus {
+    border: 1px solid #fff;
+}
+
+.term-select option {
+    color: #fff;
+    border: 4px solid #fff;
+    background-color: #191414;
+    text-align: center;
+}
+
+.question-btn {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, 10%);
+    font-size: 24px;
+    color: #fff;
+    text-decoration: none;
+    border: none;
+    background: none;
+}
+
+.question-btn:hover {
+    cursor: pointer;
+}
+
+.info {
+    position: absolute;
+    font-family: inherit;
+    font-size: 20px;
+    color: #fff;
+    transition: all 0.8s ease-in-out;
+    text-decoration: none;
+    border: none;
+    background: none;
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+
+}
+
 @media (max-height: 800px) {
     .firstvisit h2 {
         font-size: 18px;
@@ -273,5 +415,25 @@ body {
     .firstvisit {
         width: 80%;
         height: 80%;
+    }
+
+    .song-details {
+        width: 250px;
+        font-size: 16px;
+        text-overflow: ellipsis;
+    }
+
+    .cover-art {
+        width: 250px;;
+    }
+
+    .cover-art img {
+        width: 250px;
+        height: 250px;
+    }
+
+    .empty-song-card {
+        width: 250px;
+        height: 350px;
     }
 }
